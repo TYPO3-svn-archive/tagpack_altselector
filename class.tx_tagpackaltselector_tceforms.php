@@ -45,6 +45,7 @@ class tx_tagpackaltselector_tceforms {
 	public function selectorField($PA, $fobj) {
 		$formField = '';
 //		$formField = t3lib_div::view_array($PA);
+			// Get all the tags and their categories
 		$tagQuery = array(
 			'SELECT'	=> 'tx_tagpack_tags.*, tx_tagpack_categories.name AS categoryname',
 			'FROM'		=> 'tx_tagpack_tags LEFT JOIN tx_tagpack_categories ON (tx_tagpack_tags.category = tx_tagpack_categories.uid)',
@@ -54,6 +55,7 @@ class tx_tagpackaltselector_tceforms {
 			'LIMIT'		=> ''
 		);
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECT_queryArray($tagQuery);
+			// Sort tags by category
 		$categorizedTags = array();
 		while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))) {
 			$categoryName = $row['categoryname'];
@@ -62,10 +64,22 @@ class tx_tagpackaltselector_tceforms {
 			}
 			$categorizedTags[$categoryName][] = array('uid' => $row['uid'], 'name' => $row['name']);
 		}
+			// Calculate the maximum number of tags among the categories
 		$maxTags = 0;
 		foreach ($categorizedTags as $categoryName => $tags) {
 			$maxTags = max($maxTags, count($tags));
 		}
+			// Get the selected tags for the current item
+		$itemRows = tx_tagpack_api::getAttachedTagsForElement($PA['row']['uid'], $PA['table']);
+		$selectedTags = array();
+		foreach ($itemRows as $tagRow) {
+			$selectedTags[] = $tagRow['uid'];
+		}
+//		$formField = t3lib_div::view_array($itemRows);
+			// Assemble table rows
+			// Each column represents a category
+			// Each cell contains a tag with a checkbox for selection
+			// If a category has less tags that the max number of tags, an empty content is generated
 		$tableRows = array(0 => array());
 		foreach ($categorizedTags as $categoryName => $tags) {
 			$tableRows[0][] = $categoryName;
@@ -73,13 +87,18 @@ class tx_tagpackaltselector_tceforms {
 				$content = '&nbsp;';
 				if (isset($tags[$i])) {
 					$id = $PA['itemFormElID'] . '_' . $tags[$i]['uid'];
-					$content = '<input type="checkbox" name="' . $PA['itemFormElName'] . '[]" id="' . $id . '" value="' . $tags[$i]['uid'] . '" class="checkbox" />';
+					$checked = '';
+					if (in_array($tags[$i]['uid'], $selectedTags)) {
+						$checked = ' checked="checked"';
+					}
+					$content = '<input type="checkbox" name="' . $PA['itemFormElName'] . '[]" id="' . $id . '" value="' . $tags[$i]['uid'] . '" class="checkbox"'. $checked . ' />';
 					$content .= '<label for="' . $id . '">' . $tags[$i]['name'] . '</label>';
 				}
 				$tableRows[$i + 1][] = $content;
 			}
 		}
 //		$formField .= t3lib_div::view_array($tableRows);
+			// Assemble complete table with the rows prepared above
 		$formField .= '<table cellpadding="2" cellspacing="1" border="0">';
 		foreach ($tableRows as $index => $row) {
 			$class = 'bgColor3-20';
