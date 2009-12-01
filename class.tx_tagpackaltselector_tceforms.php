@@ -30,7 +30,7 @@
  * @package		TYPO3
  * @subpackage	tx_tagpackaltselector
  *
- * $Id: class.tx_templatedisplay_tceforms.php 245 2009-10-13 12:58:47Z fsuter $
+ * $Id$
  */
 class tx_tagpackaltselector_tceforms {
 
