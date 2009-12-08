@@ -33,18 +33,24 @@
  * $Id$
  */
 class tx_tagpackaltselector_tceforms {
+	/**
+	 * @var	string	ID of the element that wraps around all checkboxes
+	 */
+	static protected $checkboxesParentID = 'tx_tagpackaltselector_checkbox';
 
 	/**
 	 * This method renders the user-defined selector field
 	 *
 	 * @param	array			$PA: information related to the field
-	 * @param	t3lib_tceform	$fobj: reference to calling TCEforms object
+	 * @param	t3lib_tceform	$formObject: reference to calling TCEform object
 	 *
 	 * @return	string	The HTML for the form field
 	 */
-	public function selectorField($PA, $fobj) {
+	public function selectorField($PA, $formObject) {
+			// Add the needed JavaScript file
+		$formObject->additionalCode_pre['tx_tagpackaltselector'] = '<script src="' . t3lib_extMgm::extRelPath('tagpack_altselector') . 'resources/tceform.js" type="text/javascript"></script>';
 		$formField = '';
-//		$formField = t3lib_div::view_array($PA);
+
 			// Get all the tags and their categories
 		$tagQuery = array(
 			'SELECT'	=> 'tx_tagpack_tags.*, tx_tagpack_categories.name AS categoryname',
@@ -72,10 +78,12 @@ class tx_tagpackaltselector_tceforms {
 			// Get the selected tags for the current item
 		$itemRows = tx_tagpack_api::getAttachedTagsForElement($PA['row']['uid'], $PA['table']);
 		$selectedTags = array();
+		$selectedTagsString = '';
 		foreach ($itemRows as $tagRow) {
 			$selectedTags[] = $tagRow['uid'];
+			$selectedTagsString .= $tagRow['uid'] . ',';
 		}
-//		$formField = t3lib_div::view_array($itemRows);
+
 			// Assemble table rows
 			// Each column represents a category
 			// Each cell contains a tag with a checkbox for selection
@@ -91,15 +99,18 @@ class tx_tagpackaltselector_tceforms {
 					if (in_array($tags[$i]['uid'], $selectedTags)) {
 						$checked = ' checked="checked"';
 					}
-					$content = '<input type="checkbox" name="' . $PA['itemFormElName'] . '[]" id="' . $id . '" value="' . $tags[$i]['uid'] . '" class="checkbox"'. $checked . ' />';
+						// Render the checkbox and its label
+						// NOTE: the "tx_tagpackselector_checkbox" class is set so that it's easy
+						// to select all relevant checkboxes using JavaScript
+					$content = '<input type="checkbox" name="' . $PA['itemFormElName'] . '_check" id="' . $id . '" value="' . $tags[$i]['uid'] . '" class="checkbox"'. $checked . ' onchange="updateSelectedList(\'' . self::$checkboxesParentID . '\', \'' . $PA['itemFormElID'] . '\')" />';
 					$content .= '<label for="' . $id . '">' . $tags[$i]['name'] . '</label>';
 				}
 				$tableRows[$i + 1][] = $content;
 			}
 		}
-//		$formField .= t3lib_div::view_array($tableRows);
+
 			// Assemble complete table with the rows prepared above
-		$formField .= '<table cellpadding="2" cellspacing="1" border="0">';
+		$formField .= '<table cellpadding="2" cellspacing="1" border="0" id="' . self::$checkboxesParentID . '">';
 		foreach ($tableRows as $index => $row) {
 			$class = 'bgColor3-20';
 			if ($index == 0) {
@@ -112,6 +123,8 @@ class tx_tagpackaltselector_tceforms {
 			$formField .= '</tr>';
 		}
 		$formField .= '</table>';
+			// Add hidden field for containing comma-separated list of selected values
+		$formField .= '<input type="hidden" name="' . $PA['itemFormElName'] . '" id="' . $PA['itemFormElID'] . '" value="' . $selectedTagsString . '" />';
 		return $formField;
 	}
 }
