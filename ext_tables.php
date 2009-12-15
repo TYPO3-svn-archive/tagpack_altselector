@@ -13,5 +13,5 @@ $alternateConfiguration = array(
 							);
 
 	// Set the alternate configuration for the pages table
-$T3_VAR['EXT']['tagpack']['TCA']['alternate_config']['pages'] = $alternateConfiguration;
+//$T3_VAR['EXT']['tagpack']['TCA']['alternate_config']['pages'] = $alternateConfiguration;
 ?>
