@@ -1,2 +1,3 @@
+This extension provides an alternate selector for choosing tags coming from the Tag Pack extension.
 
-Feel free to add some documentation or simply add a link to the online manual.
+Please refer to the manual for more information.
