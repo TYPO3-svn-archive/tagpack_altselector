@@ -113,12 +113,14 @@ class tx_tagpackaltselector_tceforms {
 		$formField .= '<table cellpadding="2" cellspacing="1" border="0" id="' . self::$checkboxesParentID . '">';
 		foreach ($tableRows as $index => $row) {
 			$class = 'bgColor3-20';
+			$style = '';
 			if ($index == 0) {
 				$class = 'bgColor5';
+				$style = ' style="padding: 4px; font-weight: bold;"';
 			}
 			$formField .= '<tr class="' . $class . '">';
 			foreach ($row as $cell) {
-				$formField .= '<td>' . $cell . '</td>';
+				$formField .= '<td' . $style . '>' . $cell . '</td>';
 			}
 			$formField .= '</tr>';
 		}
